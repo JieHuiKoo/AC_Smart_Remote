@@ -3,7 +3,6 @@
 #include <Servo.h>
 
 unsigned long previousMillis = 0;
-int blink_interval = 1000;
 int led1_state = 0;
 int led2_state = 0;
 int led3_state = 0;
@@ -28,10 +27,15 @@ int button4_pin = 5;
 
 int dht_pin = 45;
 DHT dht(dht_pin, DHT11);
+int hum = 0;
+int temp = 0;
+
 int on_hum = 0;
 int on_temp = 0;
 int off_hum = 0;
 int off_temp = 0;
+int on_interval = 0;
+int off_interval = 0;
 
 int button1_state = 0;
 int button2_state = 0;
@@ -140,9 +144,19 @@ void temp_sense()
     led_toggle(1,1,1,1,1,1);
 }
 
-unsigned long blink_led(unsigned long currentMillis, int led1_toggle, int led2_toggle, int led3_toggle, int led4_toggle, int led5_toggle, int led6_toggle )
+void reset_led_state()
+{
+  led1_state = 0;
+  led2_state = 0;
+  led3_state = 0;
+  led4_state = 0;
+  led5_state = 0;
+  led6_state = 0;
+}
+
+unsigned long blink_led(unsigned long currentMillis, unsigned long interval, int led1_toggle, int led2_toggle, int led3_toggle, int led4_toggle, int led5_toggle, int led6_toggle )
 {    
-    if (currentMillis - previousMillis >= blink_interval) 
+    if (currentMillis - previousMillis >= interval) 
     {
       // save the last time you blinked the LED
       previousMillis = currentMillis;
@@ -172,7 +186,6 @@ unsigned long blink_led(unsigned long currentMillis, int led1_toggle, int led2_t
         led6_state = !led6_state;
       }
 
-
       // Send control signal to led
       led_toggle(led1_state, led2_state, led3_state, led4_state, led5_state, led6_state);
     }
@@ -191,18 +204,39 @@ int obtain_mode()
 
   while (flag)
   {
-    blink_led(millis(), 1, 1, 1, 1, 1, 1);
+    blink_led(millis(), 1000, 1, 1, 1, 1, 1, 1);
 
     if (!digitalRead(button1_pin))
     {
+      reset_led_state();
+      on_hum = 0;
+      on_temp = 0;
+      off_hum = 0;
+      off_temp = 0;
+      on_interval = 0;
+      off_interval = 0;
       return 1;
     }
     if (!digitalRead(button2_pin))
     {
+      reset_led_state();
+      on_hum = 0;
+      on_temp = 0;
+      off_hum = 0;
+      off_temp = 0;
+      on_interval = 0;
+      off_interval = 0;
       return 2;
     }
     if (!digitalRead(button3_pin))
     {
+      reset_led_state();
+      on_hum = 0;
+      on_temp = 0;
+      off_hum = 0;
+      off_temp = 0;
+      on_interval = 0;
+      off_interval = 0;
       return 3;
     }
   }
@@ -210,29 +244,30 @@ int obtain_mode()
 
 void loop()
 {
+  // If mode is not selected
   if (mode == 0)
   {
-    mode = obtain_mode();
+    // Obtain mode
+    mode = obtain_mode(); 
   }
 
+  // Mode 1: Set on temp and Set Off temp
   else if (mode == 1)
   {
     // LED indicator for mode
-    led_toggle(1,0,0,0,0,0);
+    blink_led(millis(), 500, 1,0,0,0,0,0);
 
     // Trigger to exit mode to change mode
     if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
     {
       mode = obtain_mode();
     }
-
-
   }
 
   else if (mode == 2)
   {
     // LED indicator for mode
-    led_toggle(0,1,0,0,0,0);
+    blink_led(millis(), 500, 0,1,0,0,0,0);
 
     // Trigger to exit mode to change mode
     if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
@@ -244,7 +279,7 @@ void loop()
   else if (mode == 3)
   {
     // LED indicator for mode
-    led_toggle(0,0,1,0,0,0);
+    blink_led(millis(), 500, 0,0,1,0,0,0);
 
     // Trigger to exit mode to change mode
     if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
