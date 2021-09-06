@@ -238,7 +238,7 @@
                 ""
             ],
             "cppStandard": "c++11",
-            "compilerPath": "C:/Users/jiehui/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerPath": "C:/Users/jiehui/.platformio/packages/toolchain-atmelavr@1.50400.190710/bin/avr-gcc.exe",
             "compilerArgs": [
                 "-mmcu=at90usb1286",
                 ""
