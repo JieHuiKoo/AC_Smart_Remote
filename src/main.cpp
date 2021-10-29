@@ -42,6 +42,8 @@ unsigned long on_interval = 0;
 unsigned long off_interval = 0;
 int mode = 0;
 int ac_state = 0;
+unsigned long prev_trigger_time = 0;
+int break_flag = 0;
 
 // Acceptable trigger variable range
 float hum_interval = 2;
@@ -83,6 +85,11 @@ void setup() {
   servo.attach(servo_pin);
 }
 
+unsigned long minutes_to_millis(unsigned long minutes)
+{
+  return minutes * 60000;
+}
+
 void print_line(String str_print_text)
 {
   Serial.println(str_print_text);
@@ -100,6 +107,17 @@ void trigger_button()
   delay(500);
 
   ac_state = !ac_state;
+}
+
+int trigger_after_time_passed(unsigned long delay)
+{
+  unsigned long current_time = millis();
+  if (abs(current_time - prev_trigger_time) > delay)
+  {
+    trigger_button();
+    prev_trigger_time = current_time;
+    return 1;
+  }
 }
 
 void led_toggle(int led1_flag, int led2_flag, int led3_flag, int led4_flag, int led5_flag, int led6_flag)
@@ -344,14 +362,14 @@ void loop()
       
       if (ac_state == 1)
       {
-        if ((abs(hum-off_hum) < hum_interval) || (abs(temp-off_temp) < temp_interval) || temp < off_temp || hum < off_hum)
+        if (temp < off_temp)
         {
           trigger_button();
         }
       }
       else if (ac_state == 0)
       {
-        if ((abs(hum-on_hum) < hum_interval) || (abs(temp-on_temp) < temp_interval) || temp > on_temp || hum > on_hum)
+        if (temp > on_temp)
         {
           trigger_button();
         }
@@ -365,10 +383,29 @@ void loop()
     while (blink_count <= 5)
       blink_led(millis(), 500, 0, 1, 0, 0, 0, 0);
     blink_count = 0;
-    // Trigger to exit mode to change mode
-    if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
+
+    while(!break_flag)
     {
-      mode = 0;
+      break_flag = trigger_after_time_passed(minutes_to_millis(10));
+      
+      // Trigger to exit mode to change mode
+      if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
+      {
+        break_flag = 0;
+        mode = 0;
+      }
+    }
+
+    while(!break_flag)
+    {
+      break_flag = trigger_after_time_passed(minutes_to_millis(40));
+      
+      // Trigger to exit mode to change mode
+      if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
+      {
+        break_flag = 0;
+        mode = 0;
+      }
     }
   }
 
