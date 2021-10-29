@@ -391,7 +391,7 @@ void loop()
       // Trigger to exit mode to change mode
       if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
       {
-        break_flag = 0;
+        break_flag = 1;
         mode = 0;
       }
     }
@@ -403,7 +403,7 @@ void loop()
       // Trigger to exit mode to change mode
       if (!digitalRead(button1_pin) && !digitalRead(button4_pin))
       {
-        break_flag = 0;
+        break_flag = 1;
         mode = 0;
       }
     }
